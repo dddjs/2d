@@ -30,11 +30,12 @@
   var cvs = document.getElementById('cvs');
   var ctx = cvs.getContext('2d');
 
-  function draw(ex, ey) {
-    ex = ex || 0;
-    ey = ey || 0;
+  function draw(callback) {
     ctx.name = 'arc'
-    ctx.fillStyle = '#000';
+    let ret = callback();
+    let ex = ret.ex || 0;
+    let ey = ret.ey || 0;
+
     ctx.beginPath();
     ctx.moveTo(100 + ex, 100 + ey);
     ctx.bezierCurveTo(110, 10, 199, 278, 300, 379);
@@ -42,18 +43,29 @@
     ctx.closePath();
   }
 
-  function circle(ex, ey) {
-    ex = ex || 0;
-    ey = ey || 0;
+  function circle(callback) {
     ctx.name = 'circle'
-    ctx.fillStyle = '#000';
+    let ret = callback('circle');
+    let ex = ret.ex || 0;
+    let ey = ret.ey || 0;
+
     ctx.beginPath();
     ctx.arc(100 + ex, 200 + ey, 50, 0, Math.PI * 2)
     ctx.closePath();
   }
-  draw();
+  draw(() => {
+    return {
+      ex: 0,
+      ey: 0
+    }
+  });
   ctx.fill()
-  circle();
+  circle(() => {
+    return {
+      ex: 0,
+      ey: 0
+    }
+  });
   ctx.fill()
   var fns = [draw, circle];
 
@@ -72,33 +84,32 @@
     if (drag) {
       ex = x - startX;
       ey = y - startY;
-
     }
 
 
     for (var i = fns.length; i--;) {
-
-
-      if (ctx.name == target) {
-        // debugger;
-        console.log(drag, target, ctx.name, ex, ey)
-        fns[i](ex, ey);
-      } else {
-        fns[i](0, 0);
-      }
-      if (ctx.isPointInPath(x, y)) {
-        // console.log(ctx.name)
-        if (ctx.name == 'arc') {
+      fns[i]((name) => {
+        if (ctx.isPointInPath(x, y)) {
+          console.log(ctx.name, name)
           ctx.fillStyle = "#f00";
-        } else if (ctx.name == 'circle') {
-          ctx.fillStyle = "#fee";
+        } else {
+          ctx.fillStyle = "#000"
         }
 
-
-      } else {
-        ctx.fillStyle = "#000"
-      }
-
+        if (ctx.name == target) {
+          // debugger;
+          console.log(drag, target, ctx.name, ex, ey)
+          return {
+            ex: ex,
+            ey: ey
+          }
+        } else {
+          return {
+            ex: 0,
+            ey: 0
+          }
+        }
+      });
 
       ctx.fill()
     }
@@ -109,15 +120,21 @@
     var x = e.offsetX,
       y = e.offsetY;
     for (var i = fns.length; i--;) {
-      fns[i](0, 0);
-      if (ctx.isPointInPath(x, y)) {
-        drag = true;
-        startX = x;
-        startY = y;
-        target = ctx.name;
+      fns[i](() => {
+        if (ctx.isPointInPath(x, y)) {
+          drag = true;
+          startX = x;
+          startY = y;
+          target = ctx.name;
 
-        console.log(target)
-      }
+          console.log(target)
+        }
+        return {
+          ex: 0,
+          ey: 0
+        }
+      });
+
     }
 
   }
