@@ -1,0 +1,133 @@
+<!DOCTYPE HTML>
+<html lang="en-US">
+
+<head>
+  <meta charset="UTF-8">
+  <title>isPointInPath | Canvas教程 | 脚儿网</title>
+  <meta name="keywords" content="canvas教程,html5,isPointInPath,脚儿网,代码示例" />
+  <meta name="description" content="isPointInPath的用法,以及问题,来自脚儿网的代码示例" />
+  <style type="text/css">
+    .canvas-box {
+      position: relative;
+    }
+
+    canvas {
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2)
+    }
+  </style>
+</head>
+
+<body>
+  isPointInPath的用法,以及问题
+  <br />
+
+  <div class="canvas-box">
+    <canvas id="cvs" width="400" height="300">不支持canvas</canvas>
+  </div>
+
+</body>
+<script type="text/javascript">
+  var cvs = document.getElementById('cvs');
+  var ctx = cvs.getContext('2d');
+
+  function draw(ex, ey) {
+    ex = ex || 0;
+    ey = ey || 0;
+    ctx.name = 'arc'
+    ctx.fillStyle = '#000';
+    ctx.beginPath();
+    ctx.moveTo(100 + ex, 100 + ey);
+    ctx.bezierCurveTo(110, 10, 199, 278, 300, 379);
+    ctx.lineTo(400, 100)
+    ctx.closePath();
+  }
+
+  function circle(ex, ey) {
+    ex = ex || 0;
+    ey = ey || 0;
+    ctx.name = 'circle'
+    ctx.fillStyle = '#000';
+    ctx.beginPath();
+    ctx.arc(100 + ex, 200 + ey, 50, 0, Math.PI * 2)
+    ctx.closePath();
+  }
+  draw();
+  ctx.fill()
+  circle();
+  ctx.fill()
+  var fns = [draw, circle];
+
+  let drag = false,
+    startX = 0,
+    startY = 0,
+    target = null;
+  cvs.onmousemove = function (e) {
+    var x = e.offsetX,
+      y = e.offsetY;
+    ctx.clearRect(0, 0, 400, 300)
+
+
+    let ex = 0,
+      ey = 0;
+    if (drag) {
+      ex = x - startX;
+      ey = y - startY;
+
+    }
+
+
+    for (var i = fns.length; i--;) {
+
+
+      if (ctx.name == target) {
+        // debugger;
+        console.log(drag, target, ctx.name, ex, ey)
+        fns[i](ex, ey);
+      } else {
+        fns[i](0, 0);
+      }
+      if (ctx.isPointInPath(x, y)) {
+        // console.log(ctx.name)
+        if (ctx.name == 'arc') {
+          ctx.fillStyle = "#f00";
+        } else if (ctx.name == 'circle') {
+          ctx.fillStyle = "#fee";
+        }
+
+
+      } else {
+        ctx.fillStyle = "#000"
+      }
+
+
+      ctx.fill()
+    }
+  }
+
+
+  cvs.onmousedown = function (e) {
+    var x = e.offsetX,
+      y = e.offsetY;
+    for (var i = fns.length; i--;) {
+      fns[i](0, 0);
+      if (ctx.isPointInPath(x, y)) {
+        drag = true;
+        startX = x;
+        startY = y;
+        target = ctx.name;
+
+        console.log(target)
+      }
+    }
+
+  }
+
+  cvs.onmouseup = function (e) {
+    drag = false;
+    target = null;
+    startX = 0;
+    startY = 0;
+  }
+</script>
+
+</html>
